@@ -36,9 +36,9 @@ jobs:
           git add .
           git diff --staged --quiet || git commit -m "update go constants files"
           git push
-  needs: generate_golang_constants
 
   run_go_tests_on_latest_release:
+    needs: generate_golang_constants
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
