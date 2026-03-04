@@ -78,6 +78,11 @@ func Version() (int, int) {
 	return int(major), int(minor)
 }
 
+func ArchSupported(arch int) bool {
+	var supported C.bool = C.uc_arch_supported(C.uc_arch(arch))
+	return bool(supported)
+}
+
 func NewUnicorn(arch, mode int) (Unicorn, error) {
 	major, minor := Version()
 	if major != C.UC_API_MAJOR || minor != C.UC_API_MINOR {
@@ -107,7 +112,13 @@ func (u *uc) Close() (err error) {
 }
 
 func (u *uc) StartWithOptions(begin, until uint64, options *UcOptions) error {
-	ucerr := C.uc_emu_start(u.handle, C.uint64_t(begin), C.uint64_t(until), C.uint64_t(options.Timeout), C.size_t(options.Count))
+	ucerr := C.uc_emu_start(
+		u.handle,
+		C.uint64_t(begin),
+		C.uint64_t(until),
+		C.uint64_t(options.Timeout),
+		C.size_t(options.Count),
+	)
 	return errReturn(ucerr)
 }
 
@@ -187,14 +198,18 @@ func (u *uc) MemWrite(addr uint64, data []byte) error {
 	if len(data) == 0 {
 		return nil
 	}
-	return errReturn(C.uc_mem_write(u.handle, C.uint64_t(addr), unsafe.Pointer(&data[0]), C.uint64_t(len(data))))
+	return errReturn(
+		C.uc_mem_write(u.handle, C.uint64_t(addr), unsafe.Pointer(&data[0]), C.uint64_t(len(data))),
+	)
 }
 
 func (u *uc) MemReadInto(dst []byte, addr uint64) error {
 	if len(dst) == 0 {
 		return nil
 	}
-	return errReturn(C.uc_mem_read(u.handle, C.uint64_t(addr), unsafe.Pointer(&dst[0]), C.uint64_t(len(dst))))
+	return errReturn(
+		C.uc_mem_read(u.handle, C.uint64_t(addr), unsafe.Pointer(&dst[0]), C.uint64_t(len(dst))),
+	)
 }
 
 func (u *uc) MemRead(addr, size uint64) ([]byte, error) {
@@ -211,11 +226,15 @@ func (u *uc) MemMap(addr, size uint64) error {
 }
 
 func (u *uc) MemMapPtr(addr, size uint64, prot int, ptr unsafe.Pointer) error {
-	return errReturn(C.uc_mem_map_ptr(u.handle, C.uint64_t(addr), C.uint64_t(size), C.uint32_t(prot), ptr))
+	return errReturn(
+		C.uc_mem_map_ptr(u.handle, C.uint64_t(addr), C.uint64_t(size), C.uint32_t(prot), ptr),
+	)
 }
 
 func (u *uc) MemProtect(addr, size uint64, prot int) error {
-	return errReturn(C.uc_mem_protect(u.handle, C.uint64_t(addr), C.uint64_t(size), C.uint32_t(prot)))
+	return errReturn(
+		C.uc_mem_protect(u.handle, C.uint64_t(addr), C.uint64_t(size), C.uint32_t(prot)),
+	)
 }
 
 func (u *uc) MemUnmap(addr, size uint64) error {
