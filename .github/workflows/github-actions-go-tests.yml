@@ -1,0 +1,41 @@
+name: Run Go Tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+env:
+  unicorn_latest_tag: ""
+
+jobs:
+  needs: generate_golang_constants
+  run_go_tests_on_latest_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Get latest unicorn tag"
+        id: get_unicorn_latest_tag
+        run: |
+          output=$(curl "https://api.github.com/repos/unicorn-engine/unicorn/tags" | jq -r '.[0].name')
+          echo "::set-output name=unicorn_tag::$(output)"
+
+      - name: Clone unicorn-engine repo
+        run: |
+          cd build
+          git clone https://github.com/unicorn-engine/unicorn -b ${{steps.get_unicorn_latest_tag.outputs.unicorn_tag}}
+
+      - name: Get latest release
+          cd build
+          url="https://github.com/unicorn-engine/unicorn/releases/download/${{steps.get_unicorn_latest_tag.outputs.unicorn_tag}}/ubuntu-cmake-static-x64.7z"
+          wget $url
+          7z x ubuntu-cmake-static-x64.7z -dubuntu-cmake-static-x64
+          ls -la ubuntu-cmake-static-x64
+
+      - name: run tests
+        run: |
+          # define env to source unicorn
+          go test -v .
