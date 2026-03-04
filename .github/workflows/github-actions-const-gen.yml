@@ -10,12 +10,12 @@ jobs:
     runs-on: python-latest
     steps:
       - name: Clone unicorn-engine repo
-      - run: |
+        run: |
           cd build
           git clone https://github.com/unicorn-engine/unicorn
 
       - name: generate files
-      - run: |
+        run: |
           python3 ./const_generator.py -i ./unicorn/include/unicorn -o ..
 
       - name: Commit and push
