@@ -56,6 +56,7 @@ jobs:
           git clone https://github.com/unicorn-engine/unicorn -b ${{steps.get_unicorn_latest_tag.outputs.unicorn_tag}}
 
       - name: Get latest release
+        run: |
           cd build
           url="https://github.com/unicorn-engine/unicorn/releases/download/${{steps.get_unicorn_latest_tag.outputs.unicorn_tag}}/ubuntu-cmake-static-x64.7z"
           wget $url
