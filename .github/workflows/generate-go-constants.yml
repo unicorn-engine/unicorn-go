@@ -1,0 +1,62 @@
+name: Generate golang constants
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      unicorn_ref:
+        description: "Unicorn ref (branch, tag ou commit hash)"
+        required: false
+        default: ""
+
+# Not sure its needed ?
+permissions:
+  contents: write
+
+env:
+  DEFAULT_UNICORN_REF: "master"
+
+jobs:
+  generate_golang_constants:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Resolve unicorn ref
+        id: resolve
+        run: |
+          REF="${{ github.event.inputs.unicorn_ref }}"
+          echo "ref=${REF:-$DEFAULT_UNICORN_REF}" >> $GITHUB_OUTPUT
+
+      - name: Clone unicorn-engine
+        run: |
+          git clone \
+            --depth 1 \
+            --branch ${{ steps.resolve.outputs.ref }} \
+            https://github.com/unicorn-engine/unicorn \
+            build/unicorn
+
+      - name: Generate files
+        run: |
+          cd build
+          python3 ./const_generator.py -i ./unicorn/include/unicorn -o ..
+          go fmt ..
+
+      - name: Clean up workspace
+        run: rm -rf build/unicorn
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "chore: update go constants files [skip ci]"
+          git push

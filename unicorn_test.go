@@ -59,8 +59,8 @@ func TestMemRegions(t *testing.T) {
 	}
 }
 
-func TestQuery(t *testing.T) {
-	mu, err := NewUnicorn(ARCH_ARM, MODE_THUMB)
+func TestQueryMode(t *testing.T) {
+	mu, err := NewUnicorn(ARCH_X86, MODE_32)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if mode != MODE_THUMB {
-		t.Fatalf("query returned invalid mode: %d != %d", mode, MODE_THUMB)
+	if mode != MODE_32 {
+		t.Fatalf("query returned invalid mode: %d != %d", mode, MODE_32)
 	}
 }
