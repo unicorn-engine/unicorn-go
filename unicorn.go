@@ -206,6 +206,9 @@ func (u *uc) MemRegions() ([]*MemRegion, error) {
 	if ucerr != C.UC_ERR_OK {
 		return nil, errReturn(ucerr)
 	}
+	if count == 0 {
+		return []*MemRegion{}, nil
+	}
 	ret := make([]*MemRegion, count)
 	tmp := (*[1 << 24]C.struct_uc_mem_region)(unsafe.Pointer(regions))[:count]
 	for i, v := range tmp {
