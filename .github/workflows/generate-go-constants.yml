@@ -48,7 +48,14 @@ jobs:
         run: |
           cd build
           python3 ./const_generator.py -i ./unicorn/include/unicorn -o ..
-          go fmt ..
+
+      - name: Generate Go related files
+        run: |
+          stringer -linecomment -type GoUcError -output ./unicorn_go_const_stringers.go ./unicorn_go_const.go
+
+      - name: Format go files
+        run: |
+          go fmt .
 
       - name: Clean up workspace
         run: rm -rf build/unicorn

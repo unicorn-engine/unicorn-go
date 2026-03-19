@@ -4,6 +4,8 @@
 
 uc_err uc_reg_read_batch_helper(uc_engine *handle, int *regs, uint64_t *val_out, int count) {
     void **val_ref = malloc(sizeof(void *) * count);
+    if (val_ref == NULL)
+      return UCGO_ERR_REG_BATCH_MALLOC;
     int i;
     for (i = 0; i < count; i++) {
         val_ref[i] = (void *)&val_out[i];
@@ -15,6 +17,8 @@ uc_err uc_reg_read_batch_helper(uc_engine *handle, int *regs, uint64_t *val_out,
 
 uc_err uc_reg_write_batch_helper(uc_engine *handle, int *regs, uint64_t *val_in, int count) {
     void **val_ref = malloc(sizeof(void *) * count);
+    if (val_ref == NULL)
+      return UCGO_ERR_REG_BATCH_MALLOC;
     int i;
     for (i = 0; i < count; i++) {
         val_ref[i] = (void *)&val_in[i];
