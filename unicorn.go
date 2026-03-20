@@ -181,8 +181,8 @@ func (u *uc) RegWriteBatch(regs []int, vals []uint64) error {
 	cregs2 := (*C.int)(unsafe.Pointer(&cregs[0]))
 	cvals := (*C.uint64_t)(unsafe.Pointer(&vals[0]))
 	ucerr := C.uc_reg_write_batch_helper(u.handle, cregs2, cvals, C.int(len(regs)))
-	if int(ucerr) == int(GOERR_REG_BATCH_MALLOC) {
-		return GoUcError(GOERR_REG_BATCH_MALLOC)
+	if int(ucerr) == int(UCGO_ERR_REG_BATCH_MALLOC) {
+		return GoUcError(UCGO_ERR_REG_BATCH_MALLOC)
 	}
 	return errReturn(ucerr)
 }
@@ -199,8 +199,8 @@ func (u *uc) RegReadBatch(regs []int) ([]uint64, error) {
 	vals := make([]uint64, len(regs))
 	cvals := (*C.uint64_t)(unsafe.Pointer(&vals[0]))
 	ucerr := C.uc_reg_read_batch_helper(u.handle, cregs2, cvals, C.int(len(regs)))
-	if int(ucerr) == int(GOERR_REG_BATCH_MALLOC) {
-		return nil, GoUcError(GOERR_REG_BATCH_MALLOC)
+	if int(ucerr) == int(UCGO_ERR_REG_BATCH_MALLOC) {
+		return nil, GoUcError(UCGO_ERR_REG_BATCH_MALLOC)
 	}
 	return vals, errReturn(ucerr)
 }
