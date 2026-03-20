@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <unicorn/unicorn.h>
 #include "_cgo_export.h"
+#include "uc_go.h"
 
 uc_err uc_reg_read_batch_helper(uc_engine *handle, int *regs, uint64_t *val_out, int count) {
     void **val_ref = malloc(sizeof(void *) * count);
