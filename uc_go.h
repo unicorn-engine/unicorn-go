@@ -1,0 +1,1 @@
+#define UCGO_ERR_REG_BATCH_MALLOC -1

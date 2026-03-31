@@ -181,6 +181,9 @@ func (u *uc) RegWriteBatch(regs []int, vals []uint64) error {
 	cregs2 := (*C.int)(unsafe.Pointer(&cregs[0]))
 	cvals := (*C.uint64_t)(unsafe.Pointer(&vals[0]))
 	ucerr := C.uc_reg_write_batch_helper(u.handle, cregs2, cvals, C.int(len(regs)))
+	if int(ucerr) == int(UCGO_ERR_REG_BATCH_MALLOC) {
+		return GoUcError(UCGO_ERR_REG_BATCH_MALLOC)
+	}
 	return errReturn(ucerr)
 }
 
@@ -196,6 +199,9 @@ func (u *uc) RegReadBatch(regs []int) ([]uint64, error) {
 	vals := make([]uint64, len(regs))
 	cvals := (*C.uint64_t)(unsafe.Pointer(&vals[0]))
 	ucerr := C.uc_reg_read_batch_helper(u.handle, cregs2, cvals, C.int(len(regs)))
+	if int(ucerr) == int(UCGO_ERR_REG_BATCH_MALLOC) {
+		return nil, GoUcError(UCGO_ERR_REG_BATCH_MALLOC)
+	}
 	return vals, errReturn(ucerr)
 }
 
@@ -205,6 +211,9 @@ func (u *uc) MemRegions() ([]*MemRegion, error) {
 	ucerr := C.uc_mem_regions(u.handle, &regions, &count)
 	if ucerr != C.UC_ERR_OK {
 		return nil, errReturn(ucerr)
+	}
+	if count == 0 {
+		return []*MemRegion{}, nil
 	}
 	ret := make([]*MemRegion, count)
 	tmp := (*[1 << 24]C.struct_uc_mem_region)(unsafe.Pointer(regions))[:count]
@@ -315,7 +324,7 @@ func (u *uc) ExitsDisable() error {
 
 func (u *uc) GetExitsCnt() (uint32, error) {
 	var count C.size_t
-	ucerr := C.uc_ctl_get_timeout_helper(u.handle, &count)
+	ucerr := C.uc_ctl_get_exits_cnt_helper(u.handle, &count)
 	return uint32(count), errReturn(ucerr)
 }
 
@@ -323,6 +332,9 @@ func (u *uc) GetExits() ([]uint64, error) {
 	count, err := u.GetExitsCnt()
 	if err != nil {
 		return nil, err
+	}
+	if count == 0 {
+		return []uint64{}, nil
 	}
 	exits := make([]C.uint64_t, count)
 	ucerr := C.uc_ctl_get_exits_helper(u.handle, &exits[0], C.size_t(count))
