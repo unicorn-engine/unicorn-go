@@ -24,14 +24,19 @@ func addHooks(mu uc.Unicorn) {
 	mu.HookAdd(uc.HOOK_CODE, func(mu uc.Unicorn, addr uint64, size uint32) {
 		fmt.Printf("Code: 0x%x, 0x%x\n", addr, size)
 	}, 1, 0)
-	mu.HookAdd(uc.HOOK_MEM_READ|uc.HOOK_MEM_WRITE, func(mu uc.Unicorn, access int, addr uint64, size int, value int64) {
-		if access == uc.MEM_WRITE {
-			fmt.Printf("Mem write")
-		} else {
-			fmt.Printf("Mem read")
-		}
-		fmt.Printf(": @0x%x, 0x%x = 0x%x\n", addr, size, value)
-	}, 1, 0)
+	mu.HookAdd(
+		uc.HOOK_MEM_READ|uc.HOOK_MEM_WRITE,
+		func(mu uc.Unicorn, access int, addr uint64, size int, value int64) {
+			if access == uc.MEM_WRITE {
+				fmt.Printf("Mem write")
+			} else {
+				fmt.Printf("Mem read")
+			}
+			fmt.Printf(": @0x%x, 0x%x = 0x%x\n", addr, size, value)
+		},
+		1,
+		0,
+	)
 	invalid := uc.HOOK_MEM_READ_INVALID | uc.HOOK_MEM_WRITE_INVALID | uc.HOOK_MEM_FETCH_INVALID
 	mu.HookAdd(invalid, func(mu uc.Unicorn, access int, addr uint64, size int, value int64) bool {
 		switch access {
