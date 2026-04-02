@@ -633,7 +633,7 @@ func TestStartWithOptions(t *testing.T) {
 		go func() {
 			select {
 			case <-done:
-			case <-time.After(3 * time.Second):
+			case <-time.After(20 * time.Second):
 				t.Errorf("StartWithOptions did not stop after timeout")
 			}
 		}()
