@@ -1,13 +1,9 @@
 name: Run unit tests
 
 on:
-  workflow_run:
-    workflows:
-      - "Generate golang constants"
-    branches:
-      - main
-    types:
-      - completed # ensure the generation of constants is finished before running tests
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
     inputs:
       unicorn_ref:
@@ -34,6 +30,10 @@ jobs:
         with:
           go-version: stable
 
+      - name: Install stringer tool
+        run: |
+          go install golang.org/x/tools/cmd/stringer@latest
+
       - name: Resolve unicorn ref
         id: resolve
         env:
@@ -42,27 +42,39 @@ jobs:
           OVERRIDE="${{ github.event.inputs.unicorn_ref }}"
           if [ -n "$OVERRIDE" ]; then
             echo "ref=$OVERRIDE" >> $GITHUB_OUTPUT
-
           elif [ "${{ matrix.unicorn_ref }}" = "latest_tag" ]; then
             TAG=$(curl -sf https://api.github.com/repos/unicorn-engine/unicorn/releases/latest | jq -r '.tag_name')
             echo "ref=$TAG" >> $GITHUB_OUTPUT
-
           else
             echo "ref=dev" >> $GITHUB_OUTPUT
           fi
 
-      - name: Clone unicorn
+      - name: Clone unicorn-engine
         run: |
           git clone \
             --depth 1 \
             --branch ${{ steps.resolve.outputs.ref }} \
             https://github.com/unicorn-engine/unicorn \
-            unicorn
+            build/unicorn
+
+      - name: Generate files
+        run: |
+          cd build
+          python3 ./const_generator.py -i ./unicorn/include/unicorn -o ..
+
+      - name: Generate Go related files
+        run: |
+          stringer -linecomment -type GoUcError -output ./unicorn_go_const_stringers.go ./unicorn_go_const.go
+
+      - name: Format go files
+        run: |
+          go fmt .
 
       - name: Build & install unicorn
         run: |
-          cd unicorn
-          mkdir build && cd build
+          cd build/unicorn
+          mkdir build
+          cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
           sudo make install

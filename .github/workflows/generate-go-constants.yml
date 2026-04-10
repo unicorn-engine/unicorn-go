@@ -1,3 +1,5 @@
+# This workflow generates source code that will be committed to the repository.
+# It should NEVER be triggered by untrusted sources.
 name: Generate golang constants
 
 on:
